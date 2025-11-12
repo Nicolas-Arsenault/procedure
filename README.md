@@ -1,1 +1,50 @@
 # procedure
+
+sudo apt update && sudo apt upgrade -y 
+sudo apt install apache2 mysql-server php php-mysql libapache2-mod-php php-xml php-zip php-curl php-cli php-gd php-mbstring wget unzip build-essential perl libdbi-perl libdbd-mysql-perl libapache2-mod-perl2 libapache-dbi-perl libxml-simple-perl libnet-ip-perl libarchive-zip-perl libmojolicious-perl libswitch-perl libplack-perl -y 
+sudo cpan Apache::DBI XML::Simple Net::IP Archive::Zip Mojolicious::Lite Switch Plack::Handler 
+ 
+sudo mysql 
+CREATE DATABASE ocs_db; 
+CREATE USER ocs_user@localhost IDENTIFIED BY 'password'; 
+GRANT ALL ON ocs_db.* TO ocs_user@localhost; 
+FLUSH PRIVILEGES; 
+exit 
+ 
+wget https://github.com/OCSInventory-NG/OCSInventory-ocsreports/releases/download/2.12.3/OCSNG_UNIX_SERVER-2.12.3.tar.gz 
+tar -xvzf OCSNG_UNIX_SERVER-2.12.3.tar.gz 
+cd OCSNG_UNIX_SERVER-2.12.3 
+ 
+sudo vi setup.sh 
+# Mettre a jour DB_SERVER_USER et DB_SERVER_PASSWORD 
+sudo ./setup.sh (cliquer sur enter pour tout) 
+ 
+cd /etc/apache2/conf-available/ 
+# Créer les symlinks 
+sudo ln -s /etc/apache2/conf-available/ocsinventory-reports.conf /etc/apache2/conf-enabled/ocsinventory-reports.conf 
+sudo ln -s /etc/apache2/conf-available/z-ocsinventory-server.conf /etc/apache2/conf-enabled/z-ocsinventory-server.conf 
+sudo ln -sf /etc/apache2/conf-available/zz-ocsinventory-restapi.conf /etc/apache2/conf-enabled/zz-ocsinventory-restapi.conf 
+ 
+sudo chown -R www-data:www-data /var/lib/ocsinventory-reports 
+sudo systemctl restart apache2 
+ 
+http://192.168.30.2/ocsreports/install.php 
+ 
+Login: 
+ 
+    Username: admin 
+    Password: admin 
+ 
+# Augmenter la grosseur des fichiers 
+sudo vi /etc/php/8.3/apache2/php.ini 
+ 
+upload_max_filesize = 2048M 
+post_max_size = 3000M 
+ 
+## Mettre des regles de pare feu 
+sudo ufw allow 80/tcp 
+sudo ufw allow 443/tcp 
+sudo ufw reload 
+sudo ufw enable 
+ 
+sudo service apache2 restart 
